@@ -1,17 +1,15 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'node:18'
+        }
+    }
 
     stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'main', url: 'https://github.com/Varniah88/8.2CDevSecOps.git'
-            }
-        }
-
         stage('Check Node and npm') {
             steps {
-                sh 'node -v || echo "Node.js not installed"'
-                sh 'npm -v || echo "npm not installed"'
+                sh 'node -v'
+                sh 'npm -v'
             }
         }
 
