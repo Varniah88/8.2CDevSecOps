@@ -1,40 +1,40 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:18'
-        }
+  agent {
+    docker {
+      image 'node:18'  // This official Node.js image has both node and npm installed
+      args '-u root'    // Run as root user to avoid permission issues
+    }
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        git branch: 'main', url: 'https://github.com/Varniah88/8.2CDevSecOps.git'
+      }
     }
 
-    stages {
-        stage('Check Node and npm') {
-            steps {
-                sh 'node -v'
-                sh 'npm -v'
-            }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                sh 'npm install'
-            }
-        }
-
-        stage('Run Tests') {
-            steps {
-                sh 'npm test || true'
-            }
-        }
-
-        stage('Generate Coverage Report') {
-            steps {
-                sh 'npm run coverage || true'
-            }
-        }
-
-        stage('NPM Audit (Security Scan)') {
-            steps {
-                sh 'npm audit || true'
-            }
-        }
+    stage('Install Dependencies') {
+      steps {
+        sh 'npm install'
+      }
     }
+
+    stage('Run Tests') {
+      steps {
+        sh 'npm test || true'
+      }
+    }
+
+    stage('Generate Coverage Report') {
+      steps {
+        sh 'npm run coverage || true'
+      }
+    }
+
+    stage('NPM Audit (Security Scan)') {
+      steps {
+        sh 'npm audit || true'
+      }
+    }
+  }
 }
