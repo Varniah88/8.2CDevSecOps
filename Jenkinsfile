@@ -1,10 +1,5 @@
 pipeline {
-  agent {
-    docker {
-      image 'node:18'  // This official Node.js image has both node and npm installed
-      args '-u root'    // Run as root user to avoid permission issues
-    }
-  }
+  agent any
 
   stages {
     stage('Checkout') {
@@ -15,25 +10,25 @@ pipeline {
 
     stage('Install Dependencies') {
       steps {
-        sh 'npm install'
+        bat 'npm install'
       }
     }
 
     stage('Run Tests') {
       steps {
-        sh 'npm test || true'
+        bat 'npm test || exit /b 0'
       }
     }
 
     stage('Generate Coverage Report') {
       steps {
-        sh 'npm run coverage || true'
+        bat 'npm run coverage || exit /b 0'
       }
     }
 
     stage('NPM Audit (Security Scan)') {
       steps {
-        sh 'npm audit || true'
+        bat 'npm audit || exit /b 0'
       }
     }
   }
