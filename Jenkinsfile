@@ -31,22 +31,20 @@ pipeline {
         sh 'npm audit || true'
       }
     }
-
- stage('SonarCloud Analysis') {
+stage('SonarCloud Analysis') {
   steps {
     withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+      // If sonar-scanner CLI is not installed on the agent, download and unzip it
       sh '''
-        # Debug info
-        sonar-scanner --version
-        env | grep SONAR
-        ls -la
-        cat sonar-project.properties
-        
-        # Actual scan
-        curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
-        unzip -q sonar-scanner.zip
-        export PATH=$PWD/sonar-scanner-5.0.1.3006-linux/bin:$PATH
-        sonar-scanner -Dsonar.login=$SONAR_TOKEN
+      if [ ! -d sonar-scanner ]; then
+        curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
+        unzip sonar-scanner.zip
+        mv sonar-scanner-4.8.0.2856-linux sonar-scanner
+      fi
+      
+      ./sonar-scanner/bin/sonar-scanner \
+        -Dsonar.login=$SONAR_TOKEN \
+        -X
       '''
     }
   }
