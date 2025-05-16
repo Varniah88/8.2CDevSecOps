@@ -33,16 +33,18 @@ pipeline {
     }
 
  stage('SonarCloud Analysis') {
-      steps {
-        withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
-          sh '''
-            curl -Lo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-windows.zip
-            powershell -Command "Expand-Archive -Path sonar-scanner.zip -DestinationPath . -Force"
-            .\\sonar-scanner-5.0.1.3006-windows\\bin\\sonar-scanner.bat -Dsonar.login=%SONAR_TOKEN%
-          '''
-        }
-      }
+  steps {
+    withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+      sh '''
+        curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+        unzip -q sonar-scanner.zip
+        export PATH=$PWD/sonar-scanner-5.0.1.3006-linux/bin:$PATH
+        sonar-scanner -X \
+          -Dsonar.login=$SONAR_TOKEN
+      '''
     }
+  }
+}
 
   }
 }
