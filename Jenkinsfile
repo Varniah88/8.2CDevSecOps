@@ -37,7 +37,6 @@ pipeline {
         sh 'npm audit || true'
       }
     }
-     stages {
         stage('Build') {
             steps {
                 echo 'Building...'
@@ -95,7 +94,6 @@ pipeline {
                     )
                 }
             }
-        }
     }
   }
 }
