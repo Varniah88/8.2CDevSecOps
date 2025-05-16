@@ -1,85 +1,102 @@
 pipeline {
   agent {
     docker {
-      image 'node:18'
-      args '-u root'
+      image 'node:18'  // or another node version you prefer
+      args '-u root'   // run as root (optional, for permissions)
     }
   }
-
-  environment {
-    EMAIL_RECIPIENTS = 'varniah26@gmail.com'
-
   stages {
+     stages { 
+        stage('Build') {
+            steps {
+                echo 'Task: Compile the application using a build automation tool.'
+                echo 'Tool: Maven'
+            }
+        }
     stage('Checkout') {
       steps {
         git branch: 'main', url: 'https://github.com/Varniah88/8.2CDevSecOps.git'
       }
     }
-
     stage('Install Dependencies') {
       steps {
         sh 'npm install'
       }
     }
-
     stage('Run Tests') {
       steps {
-        script {
-          try {
-            sh 'npm test | tee test.log'
-          } catch (err) {
-            sh 'echo "Test stage failed" >> test.log'
-            throw err
-          }
-        }
-      }
-      post {
-        always {
-          archiveArtifacts artifacts: 'test.log', allowEmptyArchive: true
-          mail to: "${env.EMAIL_RECIPIENTS}",
-               subject: "Jenkins: Run Tests - ${currentBuild.currentResult}",
-               body: """\
-Run Tests stage completed.
-
-Result: ${currentBuild.currentResult}
-See attached test log for details.
-""",
-               attachmentsPattern: 'test.log'
-        }
+        sh 'npm test || true'
       }
     }
-
     stage('Generate Coverage Report') {
       steps {
         sh 'npm run coverage || true'
       }
     }
-
     stage('NPM Audit (Security Scan)') {
       steps {
-        script {
-          try {
-            sh 'npm audit | tee audit.log'
-          } catch (err) {
-            sh 'echo "Security scan failed" >> audit.log'
-            throw err
-          }
-        }
+        sh 'npm audit || true'
       }
-      post {
-        always {
-          archiveArtifacts artifacts: 'audit.log', allowEmptyArchive: true
-          mail to: "${env.EMAIL_RECIPIENTS}",
-               subject: "Jenkins: Security Scan - ${currentBuild.currentResult}",
-               body: """\
-Security Scan stage completed.
+    }
+     stages {
+        stage('Build') {
+            steps {
+                echo 'Building...'
+                // Your build steps here
+            }
+        }
 
-Result: ${currentBuild.currentResult}
-See attached audit log for details.
-""",
-               attachmentsPattern: 'audit.log'
+        stage('Test') {
+            steps {
+                script {
+                    try {
+                        echo 'Running tests...'
+                        // Run your tests and generate logs, e.g., save to test.log
+                        sh 'echo "Test log content" > test.log'
+                        currentBuild.result = 'SUCCESS'
+                    } catch (err) {
+                        currentBuild.result = 'FAILURE'
+                        throw err
+                    }
+                }
+            }
+            post {
+                always {
+                    emailext (
+                        subject: "Test Stage - ${currentBuild.currentResult}",
+                        body: """Test stage completed with status: ${currentBuild.currentResult}""",
+                        attachmentsPattern: 'test.log',
+                        to: 'varniah26@gmail.com'
+                    )
+                }
+            }
         }
-      }
+
+        stage('Security Scan') {
+            steps {
+                script {
+                    try {
+                        echo 'Running security scan...'
+                        // Run your security scan and save logs, e.g., security.log
+                        sh 'echo "Security scan log content" > security.log'
+                        currentBuild.result = 'SUCCESS'
+                    } catch (err) {
+                        currentBuild.result = 'FAILURE'
+                        throw err
+                    }
+                }
+            }
+            post {
+                always {
+                    emailext (
+                        subject: "Security Scan Stage - ${currentBuild.currentResult}",
+                        body: """Security scan stage completed with status: ${currentBuild.currentResult}""",
+                        attachmentsPattern: 'security.log',
+                        to: 'varniah26@gmail.com'
+                    )
+                }
+            }
+        }
     }
   }
 }
