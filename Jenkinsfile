@@ -36,13 +36,16 @@ pipeline {
   steps {
     withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
       sh '''
-        set -x
-        echo "Downloading SonarScanner CLI..."
+        # Debug info
+        sonar-scanner --version
+        env | grep SONAR
+        ls -la
+        cat sonar-project.properties
+        
+        # Actual scan
         curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
         unzip -q sonar-scanner.zip
         export PATH=$PWD/sonar-scanner-5.0.1.3006-linux/bin:$PATH
-
-        echo "Running sonar-scanner..."
         sonar-scanner -Dsonar.login=$SONAR_TOKEN
       '''
     }
