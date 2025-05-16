@@ -6,7 +6,6 @@ pipeline {
     }
   }
   stages {
-     stages { 
         stage('Build') {
             steps {
                 echo 'Task: Compile the application using a build automation tool.'
